@@ -1,16 +1,11 @@
-from operator import mod
 import numpy as np
+import sympy as sp 
+from functions import *
 
-def aprox_diff(num, diff_x):
-    n_diff = num//diff_x
-    residual = num % diff_x
-    diff_mean = diff_x/2
-    if residual >= diff_mean:
-        return (n_diff*diff_x) + diff_x
-    else:
-        return n_diff * diff_x
+init_values = initial_values()
 
-n = 100.2
-x_diff = 0.5
+supports = np.array(init_values[0],init_values[1])
+bar = init_values[2]
+discret = bar/(bar*10)
 
-print(aprox_diff(n, x_diff))
+force_mat = process_forces(bar, discret)
