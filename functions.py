@@ -19,8 +19,11 @@ def aprox_diff(num, diff_x):
         return n_diff * diff_x
 
 def str_to_function(math_expr):
-    func = lambda x: eval(math_expr)
-    return func
+    if "x" in math_expr:
+        return lambda x: eval(math_expr)
+    else:
+        return lambda x: (x*0) + eval(math_expr)
+    
 
 def get_idx(xi, diff):
     return int(round(xi/diff))
@@ -31,22 +34,21 @@ def gen_beam_mat(b_len, x_diff):
     return np.stack([row_diff, empty_row])
 
 
-def shift_mat(mat, s_value):
-    diff = mat[0][1]
+def shift_mat(mat, s_value, diff):
     shift = get_idx(s_value, diff)
     new_ini_p = (-1) * diff * shift
-    new_fnl_p = mat[0][-1] + new_ini_p
+    new_fnl_p = mat[-1] + new_ini_p
     shifted_mat = np.arange(new_ini_p, new_fnl_p + diff, diff)
     return shifted_mat
 
 def moment_sum(mat, react_indx, mat_pure_moments = np.zeros(0)): #Editar para que funcione con empotradas
     #Rf = (sumatoria(momentos)+sumatoria(momentos_putos))/dist_rf
-    dist_rf = mat[0][react_indx]
+    dist_rf = mat[0, react_indx]
     neg_mat_pure_moments = mat_pure_moments * (-1)
     pm_sum = np.sum(neg_mat_pure_moments)
     m_sum = 0
     for i in range(0, len(mat[0])):
-        m_sum += (mat[0][i]) * (mat[1][i]) 
+        m_sum += (mat[0, i]) * (mat[1, i]) 
 
     return (m_sum + pm_sum)/dist_rf
 
@@ -57,18 +59,20 @@ def force_sum_y(force_arr):
 
     return force_sum
 
-
 #Hacer funcion para empotradas!!!!
-def calc_reactions_sup(beam_mat, sup_i, sup_f):
-    diff = beam_mat[0][1]
+def calc_reactions_sup(beam_mat, sup_i, sup_f, diff):
+    sup_i_idx = get_idx(sup_i, diff)
     sup_f_idx = get_idx(sup_f, diff)
-    dist_mat = shift_mat(beam_mat[0], sup_i)
-    sh_beam_mat = np.stack(dist_mat, beam_mat[1])
+    dist_mat = shift_mat(beam_mat[0], sup_i, diff)
+    sh_beam_mat = np.stack((dist_mat, beam_mat[1]))
+    print(sh_beam_mat)
     react_sf = moment_sum(sh_beam_mat, sup_f_idx)
-    beam_mat[1][sup_f_idx] -= react_sf #corregir
+    beam_mat[1, sup_f_idx] -= react_sf #corregir
     react_si = force_sum_y(beam_mat[1]) 
+    beam_mat[1, sup_i_idx] -= react_si
+    print(np.array([react_si, react_sf]))
 
-    return np.array([react_si, react_sf])
+    return beam_mat
 
 def initial_values():
     bar_len = float(input("Ingrese la longitud de la barra: "))
@@ -87,8 +91,7 @@ def initial_values():
             sup_2 = aprox_diff(float(input("Donde quiere localizar su soporte 2: ")), diff)
 
     return np.array([sup_1,sup_2,bar_len]) 
-
-    
+ 
 def process_forces(bar_len, diff_x):
     f_mat = gen_beam_mat(bar_len, diff_x)
 
@@ -100,7 +103,7 @@ def process_forces(bar_len, diff_x):
         force_loc = aprox_diff(float(input("Ingrese en donde quiere localizar su fuerza puntual: ")), diff_x)
         index = get_idx(force_loc, diff_x)
         print(index)
-        f_mat[1][index] += np.array([force_value]) 
+        f_mat[1, index] += np.array([force_value]) 
     
 
     distr_num = int(input("¿Cuántas cargas distribuidas desea poner?: "))
@@ -120,12 +123,16 @@ def process_forces(bar_len, diff_x):
 
         j=0
         for i in range(ini_idx, len(y_images)+ini_idx):
-            f_mat[1][i] += y_images[j]
+            f_mat[1, i] += y_images[j]
             j+=1
 
         print(y_images)
         print(f_mat)
     return f_mat
+
+def calc_sheer_forces(mat):
+    pass
+
 
 
 #force_value=float(input("Ingrese los Newtons de dicha fuerza puntual: "))
