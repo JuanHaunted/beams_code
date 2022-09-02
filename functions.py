@@ -22,7 +22,7 @@ def str_to_function(math_expr):
     if "x" in math_expr:
         return lambda x: eval(math_expr)
     else:
-        return lambda x: (x*0) + eval(math_expr)
+        return lambda x: (x*0) + (eval(math_expr) * 0.1)
     
 
 def get_idx(xi, diff):
@@ -42,7 +42,7 @@ def shift_mat(mat, s_value, diff):
     return shifted_mat
 
 def moment_sum(mat, react_indx, mat_pure_moments = np.zeros(0)): #Editar para que funcione con empotradas
-    #Rf = (sumatoria(momentos)+sumatoria(momentos_putos))/dist_rf
+    #Rf = (sumatoria(momentos)+sumatoria(momentos_puros))/dist_rf
     dist_rf = mat[0, react_indx]
     neg_mat_pure_moments = mat_pure_moments * (-1)
     pm_sum = np.sum(neg_mat_pure_moments)
@@ -136,6 +136,8 @@ def calc_sheer_forces(mat, bar_len, diff):
     for i in range(0, len(mat[0])):
         acum_integral += mat[1, i]
         sheer_mat[1, i] = acum_integral
+
+    sheer_mat[1] *= (-1)
 
     return sheer_mat
 

@@ -1,6 +1,10 @@
+import scipy as sp
+import sympy as sp
+import matplotlib.pyplot as plt
+from scipy.integrate import quad
+from scipy.integrate import cumulative_trapezoid
 from multiprocessing import Barrier
 import numpy as np
-import sympy as sp 
 from functions import *
 
 init_values = initial_values()
@@ -12,5 +16,16 @@ force_mat = process_forces(bar, discret)
 force_with_reactions = calc_reactions_sup(force_mat, si_loc, sf_loc, discret)
 sheer_forces = calc_sheer_forces(force_with_reactions, bar, discret)
 print(sheer_forces)
+x = np.arange(0 ,bar + discret, discret)
 
+plt.plot(sheer_forces[0,:], sheer_forces[1,:])
+plt.xlabel('Variable independiente')
+plt.ylabel('Variable dependiente')
+plt.show()
+integral = cumulative_trapezoid(sheer_forces[0,:],sheer_forces[1,:], initial=0)
+plt.plot(sheer_forces[0,:], integral)
+plt.xlabel('Variable independiente')
+plt.ylabel('Variable dependiente acumulada')
+plt.grid()
+plt.show()
 
