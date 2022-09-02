@@ -130,8 +130,14 @@ def process_forces(bar_len, diff_x):
         print(f_mat)
     return f_mat
 
-def calc_sheer_forces(mat):
-    pass
+def calc_sheer_forces(mat, bar_len, diff):
+    sheer_mat = gen_beam_mat(bar_len, diff)
+    acum_integral = 0
+    for i in range(0, len(mat[0])):
+        acum_integral += mat[1, i]
+        sheer_mat[1, i] = acum_integral
+
+    return sheer_mat
 
 
 
