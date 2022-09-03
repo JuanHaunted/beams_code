@@ -22,10 +22,5 @@ plt.plot(sheer_forces[0,:], sheer_forces[1,:])
 plt.xlabel('Variable independiente')
 plt.ylabel('Variable dependiente')
 plt.show()
-integral = cumulative_trapezoid(sheer_forces[0,:],sheer_forces[1,:], initial=0)
-plt.plot(sheer_forces[0,:], integral)
-plt.xlabel('Variable independiente')
-plt.ylabel('Variable dependiente acumulada')
-plt.grid()
-plt.show()
+
 
