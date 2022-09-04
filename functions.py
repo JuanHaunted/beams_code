@@ -138,18 +138,14 @@ def calc_sheer_forces(mat, bar_len, diff):
         sheer_mat[1, i] = acum_integral
 
     sheer_mat[1] *= (-1)
-    
+    return sheer_mat
    
-def trapezoids(diff_x, y_images):
+    
+def trapezoids_sum(diff_x, y_images):
     integral = np.zeros(len(y_images))
     Area = 0
-    for i in range(0, len(y_images)):
-        if  i == 0:
-            integral[i] = (diff_x/2)*(y_images[i])
-        if  i == len(y_images):
-            integral[i] = (diff_x/2)*(y_images[i])
-        else: 
-            integral[i] = (diff_x)*(y_images[i])
+    for i in range(0, len(y_images)-1):
+        integral[i] = (diff_x)*((y_images[i]+y_images[i+1])/2)
         Area += integral[i]
     print(Area)
     i += 1
@@ -163,10 +159,8 @@ def riemann_sum(diff_x, y_images):
         integral[i] = (diff_x)*(y_images[i])
         Area += integral[i]
     print(Area)
-    i += 1
     return integral
 
-    return sheer_mat
 
 
 
