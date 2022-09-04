@@ -156,6 +156,15 @@ def trapezoids(diff_x, y_images):
     return integral
 
 
+def riemann_sum(diff_x, y_images):
+    integral = np.zeros(len(y_images))
+    Area = 0
+    for i in range(0, len(y_images)):
+        integral[i] = (diff_x)*(y_images[i])
+        Area += integral[i]
+    print(Area)
+    i += 1
+    return integral
 
     return sheer_mat
 
