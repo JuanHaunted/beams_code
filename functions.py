@@ -80,12 +80,12 @@ def initial_values():
     if bar_type == 0:
 
         sup_1 = aprox_diff(float(input("Donde quiere localizar su soporte 1: ")), diff)
-        while sup_1<=0 or sup_1>=bar_len:
+        while sup_1<0 or sup_1>bar_len:
             print("Su localización de soporte está por fuerza de la barra")
             sup_1 = aprox_diff(float(input("Donde quiere localizar su soporte 1: ")), diff)
 
         sup_2 = aprox_diff(float(input("Donde quiere localizar su soporte 2: ")), diff)
-        while sup_2<=0 or sup_2>=bar_len:
+        while sup_2<0 or sup_2>bar_len:
             print("Su localización de soporte está por fuerza de la barra")
             sup_2 = aprox_diff(float(input("Donde quiere localizar su soporte 2: ")), diff)
 
