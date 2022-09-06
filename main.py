@@ -8,9 +8,14 @@ import numpy as np
 from functions import *
 
 init_values = initial_values()
-bar = init_values[2]
-si_loc = init_values[0]
-sf_loc = init_values[1]
+if init_values[-1] == 0:
+    bar = init_values[2]
+    si_loc = init_values[0]
+    sf_loc = init_values[1]
+else:
+    bar = init_values[1]
+    emp_loc = init_values[0]
+    
 discret = bar/(bar*10)
 force_mat = process_forces(bar, discret)
 force_with_reactions = calc_reactions_sup(force_mat, si_loc, sf_loc, discret)

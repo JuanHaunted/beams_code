@@ -24,7 +24,6 @@ def str_to_function(math_expr):
     else:
         return lambda x: (x*0) + (eval(math_expr) * 0.1)
     
-
 def get_idx(xi, diff):
     return int(round(xi/diff))
 
@@ -81,16 +80,24 @@ def initial_values():
     if bar_type == 0:
 
         sup_1 = aprox_diff(float(input("Donde quiere localizar su soporte 1: ")), diff)
-        while sup_1<0 or sup_1>bar_len:
+        while sup_1<=0 or sup_1>=bar_len:
             print("Su localización de soporte está por fuerza de la barra")
             sup_1 = aprox_diff(float(input("Donde quiere localizar su soporte 1: ")), diff)
 
         sup_2 = aprox_diff(float(input("Donde quiere localizar su soporte 2: ")), diff)
-        while sup_2<0 or sup_2>bar_len:
+        while sup_2<=0 or sup_2>=bar_len:
             print("Su localización de soporte está por fuerza de la barra")
             sup_2 = aprox_diff(float(input("Donde quiere localizar su soporte 2: ")), diff)
 
-    return np.array([sup_1,sup_2,bar_len]) 
+        return np.array([sup_1,sup_2,bar_len, bar_type]) 
+
+    if bar_type == 1:
+        print("El análisis se realizará automáticamente con la barra empotrada a la derecha")
+        sup_1 = 0
+
+        return np.array([sup_1, bar_len, bar_type])
+
+
  
 def process_forces(bar_len, diff_x):
     f_mat = gen_beam_mat(bar_len, diff_x)
