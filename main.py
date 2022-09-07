@@ -38,11 +38,13 @@ print(sheer_forces)
 
 #Graphing
 plt.plot(sheer_forces[0,:], sheer_forces[1,:])
-plt.xlabel('Variable independiente')
-plt.ylabel('Variable dependiente')
+plt.xlabel('Puntos de la viga')
+plt.ylabel('Cortantes')
+plt.grid()
 plt.show()
 plt.plot(sheer_forces[0,:], integral_list)
-plt.xlabel('Variable independiente')
-plt.ylabel('Variable dependiente acumulada')
+plt.xlabel('Puntos de la viga')
+plt.ylabel('Momentos')
+plt.grid()
 plt.show()
 
