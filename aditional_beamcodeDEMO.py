@@ -32,11 +32,22 @@ def deflexion(slopes, E, I):
         i+=1
     return defx
 
-def max_sigma():
-    pass
+def max_sigma(moments, section):
+    moment = np.zeros[2]
+    moment[0] = abs(max(moments))
+    moment[1] = abs(min(moments))
+    max_moment = max(moment)
+    sigma_max = (max_moment)/(section)
+    return sigma_max
+    
 
-def max_tao():
-    pass
+def max_tao(sheers, Q, I, t):
+    sheer = np.zeros[2]
+    sheer[0] = abs(max(sheers))
+    sheer[1] = abs(min(sheers))
+    max_sheer = max(sheer)
+    tao_max = (max_sheer*Q)/(I*t)
+    return tao_max
 
 #Data processing
 init_values = initial_values()
