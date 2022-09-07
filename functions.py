@@ -6,8 +6,6 @@ import pandas as pd
 
 #Se ingresan los inputs de tipo,posición de soportes,discretización ylongitud de barra
 
-    
-
 #Aprpxima números al diferencial m
 def aprox_diff(num, diff_x):
     n_diff = num//diff_x
@@ -49,7 +47,10 @@ def moment_sum(mat, react_indx, mat_pure_moments = np.zeros(0)): #Editar para qu
     for i in range(0, len(mat[0])):
         m_sum += (mat[0, i]) * (mat[1, i]) 
 
-    return (m_sum + pm_sum)/dist_rf
+    if dist_rf == 0:
+        return m_sum + pm_sum
+    else:
+        return (m_sum + pm_sum)/dist_rf
 
 def force_sum_y(force_arr):
     force_sum = 0
@@ -59,19 +60,29 @@ def force_sum_y(force_arr):
     return force_sum
 
 #Hacer funcion para empotradas!!!!
-def calc_reactions_sup(beam_mat, sup_i, sup_f, diff):
-    sup_i_idx = get_idx(sup_i, diff)
-    sup_f_idx = get_idx(sup_f, diff)
-    dist_mat = shift_mat(beam_mat[0], sup_i, diff)
-    sh_beam_mat = np.stack((dist_mat, beam_mat[1]))
-    print(sh_beam_mat)
-    react_sf = moment_sum(sh_beam_mat, sup_f_idx)
-    beam_mat[1, sup_f_idx] -= react_sf #corregir
-    react_si = force_sum_y(beam_mat[1]) 
-    beam_mat[1, sup_i_idx] -= react_si
-    print(np.array([react_si, react_sf]))
+def calc_reactions_sup(beam_mat, sup_i, sup_f, pure_moments, diff):
+    if sup_f == -1:
+        sup_i_idx = 0
+        react_y = force_sum_y(beam_mat[1])
+        react_ang = moment_sum(beam_mat, sup_i_idx, pure_moments)
+        pure_moments[1, 0] += react_ang  
+        beam_mat[1, 0] -= react_y
 
-    return beam_mat
+        return beam_mat, pure_moments
+
+    else:
+        sup_i_idx = get_idx(sup_i, diff)
+        sup_f_idx = get_idx(sup_f, diff)
+        dist_mat = shift_mat(beam_mat[0], sup_i, diff)
+        sh_beam_mat = np.stack((dist_mat, beam_mat[1]))
+        print(sh_beam_mat)
+        react_sf = moment_sum(sh_beam_mat, sup_f_idx)
+        beam_mat[1, sup_f_idx] -= react_sf #corregir
+        react_si = force_sum_y(beam_mat[1]) 
+        beam_mat[1, sup_i_idx] -= react_si
+        print(np.array([react_si, react_sf]))
+
+        return beam_mat, pure_moments
 
 def initial_values():
     bar_len = float(input("Ingrese la longitud de la barra: "))
@@ -97,8 +108,20 @@ def initial_values():
 
         return np.array([sup_1, bar_len, bar_type])
 
+def pure_moments(diff_x):
+    flag = input("¿Desea ingresar momentos puros?(y-yes, n-no): ")
+    if flag == 'n':
+        return np.zeros((1, 1))
+    n = int(input("¿Cuántos momentos puros desea ingresar?: "))
+    moment_mat = np.zeros((2, n))
+    while n:
+        n -= 1
+        loc = aprox_diff(float(input("Ingresa la localización del momento: ")), diff_x)
+        value = float(input("Ingrese la magnitud del momento: "))
+        moment_mat[0, n] += loc
+        moment_mat[1, n] += value
+    return moment_mat
 
- 
 def process_forces(bar_len, diff_x):
     f_mat = gen_beam_mat(bar_len, diff_x)
 
@@ -146,7 +169,6 @@ def calc_sheer_forces(mat, bar_len, diff):
 
     sheer_mat[1] *= (-1)
     return sheer_mat
-
 
 def riemann_sum(diff_x, y_images):
     integral = np.zeros(len(y_images))
