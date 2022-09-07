@@ -63,12 +63,13 @@ def force_sum_y(force_arr):
 def calc_reactions_sup(beam_mat, sup_i, sup_f, pure_moments, diff):
     if sup_f == -1:
         sup_i_idx = 0
+        print(beam_mat)
         react_y = force_sum_y(beam_mat[1])
         react_ang = moment_sum(beam_mat, sup_i_idx, pure_moments)
         pure_moments[1, 0] += react_ang  
         beam_mat[1, 0] -= react_y
 
-        return beam_mat, pure_moments
+        return [beam_mat, pure_moments]
 
     else:
         sup_i_idx = get_idx(sup_i, diff)
@@ -82,7 +83,7 @@ def calc_reactions_sup(beam_mat, sup_i, sup_f, pure_moments, diff):
         beam_mat[1, sup_i_idx] -= react_si
         print(np.array([react_si, react_sf]))
 
-        return beam_mat, pure_moments
+        return [beam_mat, pure_moments]
 
 def initial_values():
     bar_len = float(input("Ingrese la longitud de la barra: "))
@@ -111,7 +112,7 @@ def initial_values():
 def pure_moments(diff_x):
     flag = input("¿Desea ingresar momentos puros?(y-yes, n-no): ")
     if flag == 'n':
-        return np.zeros((1, 1))
+        return np.zeros((2, 1))
     n = int(input("¿Cuántos momentos puros desea ingresar?: "))
     moment_mat = np.zeros((2, n))
     while n:

@@ -24,12 +24,15 @@ force_mat = process_forces(bar, discret)
 calc_data = calc_reactions_sup(force_mat, si_loc, sf_loc, p_moments, discret)
 force_with_reactions = calc_data[0]
 moments = calc_data[1]
-sheer_forces = calc_sheer_forces(force_with_reactions[0], bar, discret)
+print(force_with_reactions)
+print(moments)
+sheer_forces = calc_sheer_forces(force_with_reactions, bar, discret)
 integral_list = riemann_sum(discret, sheer_forces[1,:])
 
-for i in range(len(moments[0])):
-    idx = get_idx(moments[0, i], discret)
-    integral_list[1, idx] += moments[1, i]
+if len(moments) > 0:
+    for i in range(len(moments[0])):
+        idx = get_idx(moments[0, i], discret)
+        integral_list[idx] += moments[1, i]
     
 
 #Añadir los momentos puros al integral list (Momentos flexionates)
