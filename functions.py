@@ -20,7 +20,7 @@ def str_to_function(math_expr):
     if "x" in math_expr:
         return lambda x: eval(math_expr)
     else:
-        return lambda x: (x*0) + (eval(math_expr) * 0.1)
+        return lambda x: (x*0) + (eval(math_expr) * 0.01)
     
 def get_idx(xi, diff):
     return int(round(xi/diff))
