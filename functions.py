@@ -30,11 +30,9 @@ def gen_beam_mat(b_len, x_diff):
     empty_row = np.zeros(len(row_diff))
     return np.stack([row_diff, empty_row])
 
-def shift_mat(mat, s_value, diff):
-    shift = get_idx(s_value, diff)
-    new_ini_p = (-1) * diff * shift
-    new_fnl_p = mat[-1] + new_ini_p
-    shifted_mat = np.arange(new_ini_p, new_fnl_p + diff, diff)
+def shift_mat(mat, s_value):
+    func = lambda x: x - s_value
+    shifted_mat = func(mat)
     return shifted_mat
 
 def moment_sum(mat, react_indx, mat_pure_moments = np.zeros(0)): #Editar para que funcione con empotradas
@@ -62,7 +60,6 @@ def force_sum_y(force_arr):
 def calc_reactions_sup(beam_mat, sup_i, sup_f, pure_moments, diff):
     if sup_f == -1:
         sup_i_idx = 0
-        print(beam_mat)
         react_y = force_sum_y(beam_mat[1])
         react_ang = moment_sum(beam_mat, sup_i_idx, pure_moments)
         pure_moments[1, 0] += react_ang  
@@ -73,7 +70,9 @@ def calc_reactions_sup(beam_mat, sup_i, sup_f, pure_moments, diff):
     else:
         sup_i_idx = get_idx(sup_i, diff)
         sup_f_idx = get_idx(sup_f, diff)
-        dist_mat = shift_mat(beam_mat[0], sup_i, diff)
+        dist_mat = shift_mat(beam_mat[0], sup_i)
+        print(len(beam_mat[0]))
+        print(len(dist_mat))
         sh_beam_mat = np.stack((dist_mat, beam_mat[1]))
         print(sh_beam_mat)
         react_sf = moment_sum(sh_beam_mat, sup_f_idx, pure_moments)

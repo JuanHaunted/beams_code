@@ -21,6 +21,7 @@ else:
 discret = bar/(bar*100)
 p_moments = pure_moments(bar, discret)
 force_mat = process_forces(bar, discret)
+print(len(force_mat[0]))
 calc_data = calc_reactions_sup(force_mat, si_loc, sf_loc, p_moments, discret)
 force_with_reactions = calc_data[0]
 moments = calc_data[1]
