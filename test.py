@@ -1,7 +1,8 @@
 import numpy as np
 from functions import *
 
-test = gen_beam_mat(10, 0.1)
+test = empty_row = np.zeros(101)
+moments = np.array([[0, 2.7],[90, 50]])
 
-test[0, 4] = 5
-print(test)
+help = add_pure_moments(moments, test, 10, 0.1)
+print(help)

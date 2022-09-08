@@ -18,7 +18,7 @@ def aprox_diff(num, diff_x):
 
 def str_to_function(math_expr):
     if "x" in math_expr:
-        return lambda x: eval(math_expr)
+        return lambda x: 0.01 * (eval(math_expr))
     else:
         return lambda x: (x*0) + (eval(math_expr) * 0.01)
     
@@ -30,7 +30,6 @@ def gen_beam_mat(b_len, x_diff):
     empty_row = np.zeros(len(row_diff))
     return np.stack([row_diff, empty_row])
 
-
 def shift_mat(mat, s_value, diff):
     shift = get_idx(s_value, diff)
     new_ini_p = (-1) * diff * shift
@@ -41,7 +40,7 @@ def shift_mat(mat, s_value, diff):
 def moment_sum(mat, react_indx, mat_pure_moments = np.zeros(0)): #Editar para que funcione con empotradas
     #Rf = (sumatoria(momentos)+sumatoria(momentos_puros))/dist_rf
     dist_rf = mat[0, react_indx]
-    neg_mat_pure_moments = mat_pure_moments * (-1)
+    neg_mat_pure_moments = mat_pure_moments[1] * (-1)
     pm_sum = np.sum(neg_mat_pure_moments)
     m_sum = 0
     for i in range(0, len(mat[0])):
@@ -77,8 +76,8 @@ def calc_reactions_sup(beam_mat, sup_i, sup_f, pure_moments, diff):
         dist_mat = shift_mat(beam_mat[0], sup_i, diff)
         sh_beam_mat = np.stack((dist_mat, beam_mat[1]))
         print(sh_beam_mat)
-        react_sf = moment_sum(sh_beam_mat, sup_f_idx)
-        beam_mat[1, sup_f_idx] -= react_sf #corregir
+        react_sf = moment_sum(sh_beam_mat, sup_f_idx, pure_moments)
+        beam_mat[1, sup_f_idx] -= react_sf 
         react_si = force_sum_y(beam_mat[1]) 
         beam_mat[1, sup_i_idx] -= react_si
         print(np.array([react_si, react_sf]))
@@ -109,18 +108,19 @@ def initial_values():
 
         return np.array([sup_1, bar_len, bar_type])
 
-def pure_moments(diff_x):
+def pure_moments(bar_len, diff_x):
+    moment_mat = gen_beam_mat(bar_len, diff_x)
     flag = input("¿Desea ingresar momentos puros?(y-yes, n-no): ")
     if flag == 'n':
-        return np.zeros((2, 1))
+        return moment_mat
     n = int(input("¿Cuántos momentos puros desea ingresar?: "))
-    moment_mat = np.zeros((2, n))
     while n:
         n -= 1
         loc = aprox_diff(float(input("Ingresa la localización del momento: ")), diff_x)
+        moment_idx = get_idx(loc, diff_x)
         value = float(input("Ingrese la magnitud del momento: "))
-        moment_mat[0, n] += loc
-        moment_mat[1, n] += value
+        moment_mat[1, moment_idx] += value
+
     return moment_mat
 
 def process_forces(bar_len, diff_x):
@@ -180,20 +180,11 @@ def riemann_sum(diff_x, y_images):
     i += 1
     return integral
 
-
-
-
-
-#force_value=float(input("Ingrese los Newtons de dicha fuerza puntual: "))
-
-#arr = np.array([[20, 43, 32, 32, 31],[2,1,4,2,3]])
-#arr[1][2] += 3
-#print(get_idx(2,))
-
-
-
-def main():
-    pass
-
-
-
+def add_pure_moments(moment_mat, bending_mat, b_len, x_diff):
+    row_diff = np.arange(0 ,b_len + x_diff, x_diff)
+    bending_mat = np.stack([row_diff, bending_mat])
+    sum = 0
+    for i in range(len(bending_mat[0])):
+        sum -= moment_mat[1, i]
+        bending_mat[1, i] += sum
+    return bending_mat[1]
