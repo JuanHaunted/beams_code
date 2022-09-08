@@ -21,22 +21,13 @@ else:
 discret = bar/(bar*100)
 p_moments = pure_moments(bar, discret)
 force_mat = process_forces(bar, discret)
-print(len(force_mat[0]))
 calc_data = calc_reactions_sup(force_mat, si_loc, sf_loc, p_moments, discret)
 force_with_reactions = calc_data[0]
 moments = calc_data[1]
-print(force_with_reactions)
-print(moments)
 sheer_forces = calc_sheer_forces(force_with_reactions, bar, discret)
 integral_list = riemann_sum(discret, sheer_forces[1,:])
-print(integral_list)
 if np.sum(moments[1]) != 0:
     integral_list = add_pure_moments(moments, integral_list, bar, discret)
-#Cambiar la suma de momentos, Esto no tiene sentido idiota 
-
-#Añadir los momentos puros al integral list (Momentos flexionates)
-print(sheer_forces)
-
 
 #Graphing
 plt.plot(np.concatenate([[0], sheer_forces[0,:]]), np.concatenate([[0], sheer_forces[1,:]]))

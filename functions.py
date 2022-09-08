@@ -59,11 +59,12 @@ def force_sum_y(force_arr):
 #Hacer funcion para empotradas!!!!
 def calc_reactions_sup(beam_mat, sup_i, sup_f, pure_moments, diff):
     if sup_f == -1:
-        sup_i_idx = 0
+        sup_i_idx = -1
         react_y = force_sum_y(beam_mat[1])
         react_ang = moment_sum(beam_mat, sup_i_idx, pure_moments)
-        pure_moments[1, 0] += react_ang  
-        beam_mat[1, 0] -= react_y
+        #pure_moments[1, -1] += react_ang  
+        beam_mat[1, -1] -= react_y
+
 
         return [beam_mat, pure_moments]
 
@@ -84,9 +85,9 @@ def calc_reactions_sup(beam_mat, sup_i, sup_f, pure_moments, diff):
         return [beam_mat, pure_moments]
 
 def initial_values():
-    bar_len = float(input("Ingrese la longitud de la barra: "))
+    bar_len = float(input("Ingrese la longitud de la viga: "))
     diff = bar_len/(bar_len*10)
-    bar_type = int(input("Ingrese el tipo de barra, 0=con dos soportes o 1=barra empotrada: "))
+    bar_type = int(input("Ingrese el tipo de viga \n-0 => Con dos soportes \n-1 => Empotrada \nSu selección: "))
     if bar_type == 0:
 
         sup_1 = aprox_diff(float(input("Donde quiere localizar su soporte 1: ")), diff)
@@ -99,6 +100,11 @@ def initial_values():
             print("Su localización de soporte está por fuerza de la barra")
             sup_2 = aprox_diff(float(input("Donde quiere localizar su soporte 2: ")), diff)
 
+        if sup_1 > sup_2:
+            temp = sup_1
+            sup_1 = sup_2
+            sup_2 = temp
+
         return np.array([sup_1,sup_2,bar_len, bar_type]) 
 
     if bar_type == 1:
@@ -109,16 +115,19 @@ def initial_values():
 
 def pure_moments(bar_len, diff_x):
     moment_mat = gen_beam_mat(bar_len, diff_x)
-    flag = input("¿Desea ingresar momentos puros?(y-yes, n-no): ")
+    flag = input("¿Desea ingresar momentos puros? \n-y => Si \n-n => No \nSu selección: ")
     if flag == 'n':
         return moment_mat
     n = int(input("¿Cuántos momentos puros desea ingresar?: "))
+
+    c = 1
     while n:
         n -= 1
-        loc = aprox_diff(float(input("Ingresa la localización del momento: ")), diff_x)
+        loc = aprox_diff(float(input(f"Ingresa la localización del momento {c} : ")), diff_x)
         moment_idx = get_idx(loc, diff_x)
-        value = float(input("Ingrese la magnitud del momento: "))
+        value = float(input(f"Ingrese la magnitud del momento {c} (N.m): "))
         moment_mat[1, moment_idx] += value
+        c =+ 1
 
     return moment_mat
 
@@ -127,28 +136,29 @@ def process_forces(bar_len, diff_x):
 
     
     punt_num = int(input("Ingrese la cantidad de cargas puntuales: "))
+    i = 1
     while punt_num:
         punt_num -= 1   
-        force_value = float(input("Ingrese los Newtons de dicha fuerza puntual: "))#poner catch
-        force_loc = aprox_diff(float(input("Ingrese en donde quiere localizar su fuerza puntual: ")), diff_x)
-        index = get_idx(force_loc, diff_x)
-        print(index)
+        force_loc = aprox_diff(float(input(f"Ingrese en donde quiere localizar su fuerza puntual {i}: ")), diff_x)
+        force_value = float(input(f"Ingrese la fuerza puntual {i} en Newtons: "))#poner catch
+        index = get_idx(force_loc, diff_x) 
         f_mat[1, index] += np.array([force_value]) 
-    
+        i += 1
 
     distr_num = int(input("¿Cuántas cargas distribuidas desea poner?: "))
+    k = 1
     while distr_num:
         distr_num -= 1  
-
         #Display de funciones
-        math_expr = str_to_function(str(input("Ingrese la función de su carga distribuida, con la debida notación de Python: ")))
-        begin_fun = aprox_diff(float(input("Ingrese la posicion inicial de la carga distribuida: ")), diff_x)
-        end_fun = aprox_diff(float(input("Ingrese la posición final de la carga distribuida: ")), diff_x)
-        dom_f = aprox_diff(float(input("Ingrese el valor inicial del dominio de la función: ")), diff_x)
-        dist_diff = (end_fun-begin_fun)
+        math_expr = str_to_function(str(input(f"Ingrese la función la carga distribuida {k} (en N/m) , con la debida notación de Python: ")))
+        begin_fun = aprox_diff(float(input(f"Ingrese la posicion inicial de la carga distribuida {k}: ")), diff_x)
+        end_fun = aprox_diff(float(input(f"Ingrese la posición final de la carga distribuida {k}: ")), diff_x)
+        dom_f = aprox_diff(float(input(f"Ingrese el valor inicial del dominio de la función {k}: ")), diff_x)
+        dist_diff = end_fun - begin_fun
         row_diff = np.arange(dom_f ,dom_f + dist_diff + diff_x, diff_x)
         y_images = math_expr(row_diff)
         ini_idx = get_idx(begin_fun, diff_x)
+        k += 1
 
 
         j=0
@@ -156,8 +166,6 @@ def process_forces(bar_len, diff_x):
             f_mat[1, i] += y_images[j]
             j+=1
 
-        print(y_images)
-        print(f_mat)
     return f_mat
 
 def calc_sheer_forces(mat, bar_len, diff):
