@@ -21,6 +21,12 @@ def str_to_function(math_expr):
         return lambda x: 0.01 * (eval(math_expr))
     else:
         return lambda x: (x*0) + (eval(math_expr) * 0.01)
+
+def str_to_function_wo_dis(math_expr):
+    if "x" in math_expr:
+        return lambda x:  (eval(math_expr))
+    else:
+        return lambda x: (x*0) + (eval(math_expr))
     
 def get_idx(xi, diff):
     return int(round(xi/diff))
@@ -133,9 +139,9 @@ def pure_moments(bar_len, diff_x):
 
 def process_forces(bar_len, diff_x):
     f_mat = gen_beam_mat(bar_len, diff_x)
-
     
     punt_num = int(input("Ingrese la cantidad de cargas puntuales: "))
+    inf_punt = np.zeros(shape=(2, punt_num), dtype=float)
     i = 1
     while punt_num:
         punt_num -= 1   
@@ -143,14 +149,22 @@ def process_forces(bar_len, diff_x):
         force_value = float(input(f"Ingrese la fuerza puntual {i} en Newtons: "))#poner catch
         index = get_idx(force_loc, diff_x) 
         f_mat[1, index] += np.array([force_value]) 
+
+        inf_punt[0, i-1] = force_loc
+        inf_punt[1, i-1] = force_value
         i += 1
+     
 
     distr_num = int(input("¿Cuántas cargas distribuidas desea poner?: "))
+    inf_dist = [[],[],[],[]]
     k = 1
     while distr_num:
         distr_num -= 1  
+
         #Display de funciones
-        math_expr = str_to_function(str(input(f"Ingrese la función la carga distribuida {k} (en N/m) , con la debida notación de Python: ")))
+        math_expr_str = input(f"Ingrese la función la carga distribuida {k} (en N/m) , con la debida notación de Python: ")
+        math_expr = str_to_function(math_expr_str)
+        math_expr_wo_dis = str_to_function_wo_dis(math_expr_str)
         begin_fun = aprox_diff(float(input(f"Ingrese la posicion inicial de la carga distribuida {k}: ")), diff_x)
         end_fun = aprox_diff(float(input(f"Ingrese la posición final de la carga distribuida {k}: ")), diff_x)
         dom_f = aprox_diff(float(input(f"Ingrese el valor inicial del dominio de la función {k}: ")), diff_x)
@@ -158,6 +172,12 @@ def process_forces(bar_len, diff_x):
         row_diff = np.arange(dom_f ,dom_f + dist_diff + diff_x, diff_x)
         y_images = math_expr(row_diff)
         ini_idx = get_idx(begin_fun, diff_x)
+
+        inf_dist[0].append(math_expr_wo_dis)
+        inf_dist[1].append(begin_fun)
+        inf_dist[2].append(end_fun)
+        inf_dist[3].append(dom_f)
+
         k += 1
 
 
@@ -166,7 +186,8 @@ def process_forces(bar_len, diff_x):
             f_mat[1, i] += y_images[j]
             j+=1
 
-    return f_mat
+    return f_mat, inf_punt, inf_dist
+
 
 def calc_sheer_forces(mat, bar_len, diff):
     sheer_mat = gen_beam_mat(bar_len, diff)
@@ -204,7 +225,6 @@ def max_sigma(moments, section):
     sigma_max = (max_moment)/(section)
     return sigma_max
     
-
 def max_tao(sheers, Q, I, t):
     sheer = np.zeros[2]
     sheer[0] = abs(max(sheers))
