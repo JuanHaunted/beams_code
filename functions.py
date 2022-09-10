@@ -223,30 +223,40 @@ def aditional_info():
     if decision == "n":
         pass
     elif decision == "y":
-        decision2 = input("Ingrese el perfil que quiere para su viga \n -r => Rectangular \n -w => Tipo H \n Su selección:")
+        decision2 = input("Ingrese el perfil que quiere para su viga \n -r => Rectangular \n -w => Tipo H \n -c => Circular \n Su selección:")
         if decision2 == "w":
             print("El perfil a considerar será de tipo W, el cual es una viga tipo H. \n Revise el anexo de excel llamado SpecsTipo_H. ")
             my_I = float(input("Ingrese el momento de inercia respecto a x (I) (Columna DQ): "))
             my_Q = float(input("Ingrese el primer momento respecto al eje centroidal del área de la sección transversal (Q) (Columna EI): "))
             my_t = float(input("Ingrese el espesor del alma de la viga (t) (Columna CU): "))
             my_S = float(input("Ingrese el módulo de sección (S) (Columna DS): "))
+            my_r = 0
+        if decision2 == "c":
+            print("El perfil a considerar será de tipo circular. ")
+            my_I = 1
+            my_Q = 1
+            my_t = 1
+            my_r = float(input("Ingrese el radio del círculo: "))
+            my_S = float(input("Ingrese el módulo de sección (S): "))
         elif decision2 == "r":
             decision3 = input("El perfil a considerar será de tipo rectangular \n ¿Quiere calcular usted mismo las especificaciones de la viga? \n -y => Si \n -n => No \n Su selección:")
             if decision3 == "y":
-                print("Revise el anexo tipo JPG llamado SpecsTipo_R \n Siendo t el espesor de la viga y h su altura, calcule como se muestra. ")
+                print("Revise el anexo tipo PDF llamado especificaciones \n Siendo t el espesor de la viga y h su altura, calcule como se muestra. ")
                 my_I = float(input("Ingrese el momento de inercia respecto a x (I): "))
                 my_Q = float(input("Ingrese el primer momento respecto al eje centroidal del área de la sección transversal (Q): "))
                 my_t = float(input("Ingrese el espesor de la viga (t): "))
                 my_S = float(input("Ingrese el módulo de sección de la viga (S): "))
+                my_r = 0
             elif decision3 == "n":
-                print("Revise el anexo tipo JPG llamado SpecsTipo_R \nSiendo t el espesor de la viga y h su altura, ingrese según la tabla. ")
+                print("Revise el anexo tipo PDF llamado especificaciones \n Siendo t el espesor de la viga y h su altura, ingrese según la tabla. ")
                 my_I = float(input("Ingrese el momento de inercia respecto a x (I): "))
                 my_t = float(input("Ingrese el espesor de la viga (t): "))
                 my_h = float(input("Ingrese la altura de la viga (h): "))
                 my_S = float(input("Ingrese el módulo de sección (S) según el eje X-X: "))
+                my_r = 0
                 print("El primer momento respecto al eje centroidal lo calculamos nosotros esta vez ;) ")
                 my_Q = (my_t*(my_h**2))/8
-    return np.array([my_S, my_Q, my_I, my_t]) 
+    return np.array([my_S, my_Q, my_I, my_t, my_r, decision, decision2]) 
 
 def max_sigma(moments, section):
     moment = np.zeros[2]
@@ -256,10 +266,14 @@ def max_sigma(moments, section):
     sigma_max = (max_moment)/(section)
     return sigma_max
     
-def max_tao(sheers, Q, I, t):
+
+def max_tao(sheers, Q, I, t, type, r):
     sheer = np.zeros[2]
     sheer[0] = abs(max(sheers))
     sheer[1] = abs(min(sheers))
     max_sheer = max(sheer)
-    tao_max = (max_sheer*Q)/(I*t)
+    if type == "r" or "w":
+        tao_max = (max_sheer*Q)/(I*t)
+    elif type == "c":
+        tao_max = (4*max_sheer)/(pi*(r**2))
     return tao_max
