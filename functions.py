@@ -254,11 +254,11 @@ def aditional_info():
                 my_S = float(input("Ingrese el módulo de sección de la viga (S): "))
                 my_r = 0
             elif decision3 == "n":
-                print("Revise el anexo tipo PDF llamado especificaciones \n Siendo t el espesor de la viga y h su altura, ingrese según la tabla. ")
+                print("Revise el anexo tipo PDF llamado especificaciones \n Siendo t el espesor de la viga y h su altura, ingrese los datos. ")
                 my_t = float(input("Ingrese el espesor de la viga (t): "))
                 my_h = float(input("Ingrese la altura de la viga (h): "))
-                my_I = float(input("Ingrese el momento de inercia respecto a x (I): "))
-                my_S = float(input("Ingrese el módulo de sección (S) según el eje X-X: "))
+                my_I = ((my_t)*(my_h**3))/12
+                my_S = my_I/(my_h/2)
                 my_r = 0
                 print("El primer momento respecto al eje centroidal lo calculamos nosotros esta vez ;) ")
                 my_Q = (my_t*(my_h**2))/8
