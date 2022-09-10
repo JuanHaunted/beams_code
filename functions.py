@@ -240,12 +240,22 @@ def aditional_info():
             my_S = float(input("Ingrese el módulo de sección (S) (Columna DS): "))
             my_r = 0
         if decision2 == "c":
-            print("El perfil a considerar será de tipo circular. ")
-            my_I = 1
-            my_Q = 1
-            my_t = 1
-            my_r = float(input("Ingrese el radio del círculo: "))
-            my_S = float(input("Ingrese el módulo de sección (S): "))
+            decision3 = input("El perfil a considerar será de tipo circular\n ¿Quiere calcular usted mismo las especificaciones de la viga? \n -y => Si \n -n => No \n Su selección:")
+            if decision3 == "y":
+                print("Revise el anexo tipo PDF llamado especificaciones \n Siendo r el radio del círculo. Ingrese:  ")
+                my_Q = 1
+                my_I = 1
+                my_Q = 1
+                my_t = 1
+                my_r = float(input("Ingrese el radio del círculo: "))
+                my_S = float(input("Ingrese el módulo de sección (S): "))
+            elif decision3 == "n":
+                print("Revise el anexo tipo PDF llamado especificaciones \n Siendo r el radio del círculo. Ingrese:  ")
+                my_Q = 1
+                my_t = 1
+                my_r = float(input("Ingrese el radio del círculo: "))
+                my_I = ((1/8)*pi)*(my_r**4)
+                my_S = my_I/my_r
         elif decision2 == "r":
             decision3 = input("El perfil a considerar será de tipo rectangular \n ¿Quiere calcular usted mismo las especificaciones de la viga? \n -y => Si \n -n => No \n Su selección:")
             if decision3 == "y":
@@ -257,7 +267,7 @@ def aditional_info():
                 my_S = float(input("Ingrese el módulo de sección de la viga (S): "))
                 my_r = 0
             elif decision3 == "n":
-                print("Revise el anexo tipo PDF llamado especificaciones \n Siendo t el espesor de la viga y h su altura, ingrese los datos. ")
+                print("Revise el anexo tipo PDF llamado especificaciones \n Siendo t el espesor de la viga y h su altura, ingrese según la tabla. ")
                 my_t = float(input("Ingrese el espesor de la viga (t): "))
                 my_h = float(input("Ingrese la altura de la viga (h): "))
                 my_I = ((my_t)*(my_h**3))/12
@@ -265,6 +275,7 @@ def aditional_info():
                 my_r = 0
                 my_Q = (my_t*(my_h**2))/8
     return np.array([my_S, my_Q, my_I, my_t, my_r, decision, decision2]) 
+
 
 def max_sigma(moments, section):
     moment = np.zeros(2)
