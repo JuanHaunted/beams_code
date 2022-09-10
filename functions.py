@@ -221,7 +221,12 @@ def aditional_info():
     decision = input("Desea considerar el perfil de la viga? \n -y => Si \n -n => No \n Su selección: ")
 
     if decision == "n":
-        pass
+        my_S = 0
+        my_Q = 0 
+        my_I = 0
+        my_t = 0 
+        my_r = 0
+        decision2 = 0
     elif decision == "y":
         decision2 = input("Ingrese el perfil que quiere para su viga \n -r => Rectangular \n -w => Tipo H \n -c => Circular \n Su selección:")
         if decision2 == "w":
@@ -242,16 +247,17 @@ def aditional_info():
             decision3 = input("El perfil a considerar será de tipo rectangular \n ¿Quiere calcular usted mismo las especificaciones de la viga? \n -y => Si \n -n => No \n Su selección:")
             if decision3 == "y":
                 print("Revise el anexo tipo PDF llamado especificaciones \n Siendo t el espesor de la viga y h su altura, calcule como se muestra. ")
+                my_t = float(input("Ingrese el espesor de la viga (t): "))
+                my_h = float(input("Ingrese la altura de la viga (h): "))
                 my_I = float(input("Ingrese el momento de inercia respecto a x (I): "))
                 my_Q = float(input("Ingrese el primer momento respecto al eje centroidal del área de la sección transversal (Q): "))
-                my_t = float(input("Ingrese el espesor de la viga (t): "))
                 my_S = float(input("Ingrese el módulo de sección de la viga (S): "))
                 my_r = 0
             elif decision3 == "n":
                 print("Revise el anexo tipo PDF llamado especificaciones \n Siendo t el espesor de la viga y h su altura, ingrese según la tabla. ")
-                my_I = float(input("Ingrese el momento de inercia respecto a x (I): "))
                 my_t = float(input("Ingrese el espesor de la viga (t): "))
                 my_h = float(input("Ingrese la altura de la viga (h): "))
+                my_I = float(input("Ingrese el momento de inercia respecto a x (I): "))
                 my_S = float(input("Ingrese el módulo de sección (S) según el eje X-X: "))
                 my_r = 0
                 print("El primer momento respecto al eje centroidal lo calculamos nosotros esta vez ;) ")
