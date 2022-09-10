@@ -32,7 +32,10 @@ def get_idx(xi, diff):
     return int(round(xi/diff))
 
 def gen_beam_mat(b_len, x_diff):
-    row_diff = np.arange(0 ,b_len + x_diff, x_diff)
+    int_len = b_len/x_diff
+    f = lambda x: x*x_diff
+    row_diff = np.arange(0 ,int_len + 1, 1)
+    row_diff = f(row_diff)
     empty_row = np.zeros(len(row_diff))
     return np.stack([row_diff, empty_row])
 
