@@ -265,7 +265,7 @@ def aditional_info():
     return np.array([my_S, my_Q, my_I, my_t, my_r, decision, decision2]) 
 
 def max_sigma(moments, section):
-    moment = np.zeros[2]
+    moment = np.zeros(2)
     moment[0] = abs(max(moments))
     moment[1] = abs(min(moments))
     max_moment = max(moment)
@@ -274,7 +274,7 @@ def max_sigma(moments, section):
     
 
 def max_tao(sheers, Q, I, t, type, r):
-    sheer = np.zeros[2]
+    sheer = np.zeros(2)
     sheer[0] = abs(max(sheers))
     sheer[1] = abs(min(sheers))
     max_sheer = max(sheer)
