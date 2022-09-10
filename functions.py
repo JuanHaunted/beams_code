@@ -217,6 +217,37 @@ def add_pure_moments(moment_mat, bending_mat, b_len, x_diff):
         bending_mat[1, i] += sum
     return bending_mat[1]
 
+def aditional_info():
+    decision = input("Desea considerar el perfil de la viga? \n -y => Si \n -n => No \n Su selección: ")
+
+    if decision == "n":
+        pass
+    elif decision == "y":
+        decision2 = input("Ingrese el perfil que quiere para su viga \n -r => Rectangular \n -w => Tipo H \n Su selección:")
+        if decision2 == "w":
+            print("El perfil a considerar será de tipo W, el cual es una viga tipo H. \n Revise el anexo de excel llamado SpecsTipo_H. ")
+            my_I = float(input("Ingrese el momento de inercia respecto a x (I) (Columna DQ): "))
+            my_Q = float(input("Ingrese el primer momento respecto al eje centroidal del área de la sección transversal (Q) (Columna EI): "))
+            my_t = float(input("Ingrese el espesor del alma de la viga (t) (Columna CU): "))
+            my_S = float(input("Ingrese el módulo de sección (S) (Columna DS): "))
+        elif decision2 == "r":
+            decision3 = input("El perfil a considerar será de tipo rectangular \n ¿Quiere calcular usted mismo las especificaciones de la viga? \n -y => Si \n -n => No \n Su selección:")
+            if decision3 == "y":
+                print("Revise el anexo tipo JPG llamado SpecsTipo_R \n Siendo t el espesor de la viga y h su altura, calcule como se muestra. ")
+                my_I = float(input("Ingrese el momento de inercia respecto a x (I): "))
+                my_Q = float(input("Ingrese el primer momento respecto al eje centroidal del área de la sección transversal (Q): "))
+                my_t = float(input("Ingrese el espesor de la viga (t): "))
+                my_S = float(input("Ingrese el módulo de sección de la viga (S): "))
+            elif decision3 == "n":
+                print("Revise el anexo tipo JPG llamado SpecsTipo_R \nSiendo t el espesor de la viga y h su altura, ingrese según la tabla. ")
+                my_I = float(input("Ingrese el momento de inercia respecto a x (I): "))
+                my_t = float(input("Ingrese el espesor de la viga (t): "))
+                my_h = float(input("Ingrese la altura de la viga (h): "))
+                my_S = float(input("Ingrese el módulo de sección (S) según el eje X-X: "))
+                print("El primer momento respecto al eje centroidal lo calculamos nosotros esta vez ;) ")
+                my_Q = (my_t*(my_h**2))/8
+    return np.array([my_S, my_Q, my_I, my_t]) 
+
 def max_sigma(moments, section):
     moment = np.zeros[2]
     moment[0] = abs(max(moments))
