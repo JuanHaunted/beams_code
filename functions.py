@@ -263,7 +263,6 @@ def aditional_info():
                 my_I = ((my_t)*(my_h**3))/12
                 my_S = my_I/(my_h/2)
                 my_r = 0
-                print("El primer momento respecto al eje centroidal lo calculamos nosotros esta vez ;) ")
                 my_Q = (my_t*(my_h**2))/8
     return np.array([my_S, my_Q, my_I, my_t, my_r, decision, decision2]) 
 
@@ -281,6 +280,7 @@ def max_tao(sheers, Q, I, t, type, r):
     sheer[0] = abs(max(sheers))
     sheer[1] = abs(min(sheers))
     max_sheer = max(sheer)
+    tao_max = 0
     if type == "r" or "w":
         tao_max = (max_sheer*Q)/(I*t)
     elif type == "c":
