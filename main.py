@@ -29,7 +29,7 @@ integral_list = riemann_sum(discret, sheer_forces[1,:])
 if np.sum(moments[1]) != 0:
     integral_list = add_pure_moments(moments, integral_list, bar, discret)
 if aditional_values[5] == "y":
-    sigma_max = max_sigma(integral_list, aditional_values[0])
+    sigma_max = max_sigma(integral_list, float(aditional_values[0]))
     tao_max = max_tao(sheer_forces[1], float(aditional_values[1]), float(aditional_values[2]), float(aditional_values[3]), aditional_values[6], float(aditional_values[4]))
 elif aditional_values[5] == "n":
     sigma_max = 0
