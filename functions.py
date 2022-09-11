@@ -3,6 +3,8 @@ from math import *
 from tkinter import X
 import numpy as np
 import pandas as pd
+import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
 
 #Se ingresan los inputs de tipo,posición de soportes,discretización ylongitud de barra
 
@@ -34,9 +36,9 @@ def get_idx(xi, diff):
 def gen_beam_mat(b_len, x_diff):
     int_len = b_len/x_diff
     f = lambda x: x*x_diff
-    row_diff = np.linspace(0 ,int_len + 1, int(int_len + 1))
+    row_diff = np.arange(0, int_len + 1, 1)
     row_diff = f(row_diff)
-    empty_row = np.zeros(len(row_diff))
+    empty_row = np.zeros_like(row_diff)
     return np.stack([row_diff, empty_row])
 
 def shift_mat(mat, s_value):
@@ -100,12 +102,12 @@ def initial_values():
     if bar_type == 0:
 
         sup_1 = aprox_diff(float(input("Donde quiere localizar su soporte 1: ")), diff)
-        while sup_1<0 or sup_1>bar_len:
+        while sup_1<0 or sup_1>bar_len+0.0001:
             print("Su localización de soporte está por fuerza de la barra")
             sup_1 = aprox_diff(float(input("Donde quiere localizar su soporte 1: ")), diff)
 
         sup_2 = aprox_diff(float(input("Donde quiere localizar su soporte 2: ")), diff)
-        while sup_2<0 or sup_2>bar_len:
+        while sup_2<0 or sup_2>bar_len+0.0001:
             print("Su localización de soporte está por fuerza de la barra")
             sup_2 = aprox_diff(float(input("Donde quiere localizar su soporte 2: ")), diff)
 
@@ -159,7 +161,7 @@ def process_forces(bar_len, diff_x):
      
 
     distr_num = int(input("¿Cuántas cargas distribuidas desea poner?: "))
-    inf_dist = [[],[],[],[]]
+    inf_dist = [[], [], [], [], []]
     k = 1
     while distr_num:
         distr_num -= 1  
@@ -172,7 +174,13 @@ def process_forces(bar_len, diff_x):
         end_fun = aprox_diff(float(input(f"Ingrese la posición final de la carga distribuida {k}: ")), diff_x)
         dom_f = aprox_diff(float(input(f"Ingrese el valor inicial del dominio de la función {k}: ")), diff_x)
         dist_diff = end_fun - begin_fun
-        row_diff = np.arange(dom_f ,dom_f + dist_diff + diff_x, diff_x)
+        int_len = bar_len/diff_x
+        int_dom = dom_f/diff_x
+        int_dist = dist_diff/diff_x
+        f = lambda x: x*diff_x
+        row_diff = np.arange(int_dom, int_dom + int_dist + 1, 1)
+        row_diff = f(row_diff)
+        #row_diff = np.arange(dom_f ,dom_f + dist_diff + diff_x, diff_x)
         y_images = math_expr(row_diff)
         ini_idx = get_idx(begin_fun, diff_x)
 
@@ -180,7 +188,7 @@ def process_forces(bar_len, diff_x):
         inf_dist[1].append(begin_fun)
         inf_dist[2].append(end_fun)
         inf_dist[3].append(dom_f)
-
+        inf_dist[4].append(math_expr_str)
         k += 1
 
 
@@ -213,7 +221,7 @@ def riemann_sum(diff_x, y_images):
 def add_pure_moments(moment_mat, bending_mat, b_len, x_diff):
     int_len = b_len/x_diff
     f = lambda x: x*x_diff
-    row_diff = np.linspace(0 ,int_len + 1, int(int_len + 1))
+    row_diff = np.arange(0, int_len + 1, 1)
     row_diff = f(row_diff)
     bending_mat = np.stack([row_diff, bending_mat])
     sum = 0
@@ -285,7 +293,7 @@ def max_sigma(moments, section):
     max_moment = max(moment)
     sigma_max = (max_moment)/(section)
     return sigma_max
-
+    
 def max_tao(sheers, Q, I, t, type, r):
     sheer = np.zeros(2)
     sheer[0] = abs(max(sheers))
@@ -297,3 +305,188 @@ def max_tao(sheers, Q, I, t, type, r):
     elif type == "c":
         tao_max = (4*max_sheer)/(pi*(r**2))
     return tao_max
+
+# Función para hallar los puntos inferiores de los soportes, para graficar
+def find_point(z):
+    bajo_der = [z[0] + 1, z[1] - 3]
+    bajo_iz = [z[0] - 1, z[1] - 3]
+    return bajo_der, bajo_iz
+
+
+# Función para la gráfica ilustrativa de fuerzas en una viga
+def gen_graph(bar_l, bar_type, x_sup, der_sup, iz_sup, x2_sup, der_sup2, iz_sup2, forc_m, distrib, moments):
+    with plt.style.context('ggplot'):
+        if bar_type == 0:
+
+            # Diseño gráfica
+            plt.xlim([-2, bar_l + 2])
+            plt.ylim([-8, 30])
+            plt.suptitle("Gráfica de cargas sobre una barra apoyada", fontsize=12, fontweight='bold',
+                         color="darkslateblue")
+            plt.xlabel("Distancia (m)")
+
+            # Se dibuja la barra, modulo patches rectangle
+            # dar coordenada de inicio, largo en y, longitud en x y grosor. zorder pone adelante la figura
+            rect = mpatches.Rectangle((0, -3), bar_l, 3, zorder=2, color="lightslategrey")
+            plt.gca().add_patch(rect)
+
+            # Soporte1, modulo patches crea figuras de n cantidad de lados
+            list_trian = [x_sup, der_sup, iz_sup]
+            trian = mpatches.Polygon(list_trian, zorder=2, color="darkseagreen")
+            plt.gca().add_patch(trian)
+
+            # soporte2
+            list_trian2 = [x2_sup, der_sup2, iz_sup2]
+            trian2 = mpatches.Polygon(list_trian2, zorder=2, color="darkseagreen")
+            plt.gca().add_patch(trian2)
+
+            # Variables fuerzas puntuales
+            loc_f = forc_m[0]
+            value_f = forc_m[1]
+
+            # Variables distribuidas
+
+            math_exp = distrib[0]
+            begin_f = distrib[1]
+            end_f = distrib[2]
+            domain = distrib[3]
+            str_m = distrib[4]
+
+            # Variables momento
+
+            loc_mom = moments[0]
+            value_mom = moments[1]
+
+            # Dibujar fuerzas puntuales (flechas)
+            for i in range(0, len(loc_f)):
+                col = (np.random.random(), np.random.random(), np.random.random())  # genera colores random
+
+                # dibuja una flecha con coordenadas iniciales a finales
+                puntual = plt.arrow(loc_f[i], 5, 0, -3.5, zorder=2, color=col, width=0.3, label=f"{value_f[i]} N")
+
+            # Dibujar distribuidas
+
+            for x in range(0, len(math_exp)):
+                # condicional para graficar dominios diferentes a 0
+                if domain[x] != 0:
+                    # se añade la traslación
+                    xpts = np.linspace(begin_f[x] + domain[x], end_f[x] + domain[x], 50)
+                    expr = math_exp[x]
+                    evalu = expr(xpts)
+                    col = (np.random.random(), np.random.random(), np.random.random())
+
+                else:
+                    xpts = np.linspace(begin_f[x], end_f[x], 50)
+                    expr = math_exp[x]
+                    evalu = expr(xpts)
+                    col = (np.random.random(), np.random.random(), np.random.random())  # genera colores random
+
+                plt.plot(xpts, evalu, zorder=2, color=col, label=str_m[x])
+                plt.fill_between(xpts, 0, evalu, color=col, alpha=0.2)
+
+            # Dibujar momentos
+
+            # ellip = mpatches.FancyArrowPatch((4, 3), (4, 5), connectionstyle="arc3,rad=.5")
+            # plt.gca().add_patch(ellip)
+
+            plt.legend(fancybox=True, loc='upper right', shadow=True)
+            plt.subplots_adjust(left=0.135,
+                                bottom=0.125,
+                                right=0.905,
+                                top=0.835,
+                                wspace=0.2,
+
+                                hspace=0.205)
+        plt.minorticks_on()  # se activan rayas en los ejes para dar presición a las medidas
+        plt.tick_params(which='major',  # Options for both major and minor ticks
+                        bottom='off')  # turn off bottom ticks
+
+        plt.grid(color='white')
+
+        plt.show()
+
+
+def cool_graphs(mat, mat_m, dis, bar_l):
+    x = mat[0]
+    y = mat[1]
+
+    # Encontrar coordenadas xy y del cortante max
+    max_ref = np.max(y)
+    abs_cort = np.absolute(y)
+    max_cort = np.max(abs_cort)
+
+    if max_ref < max_cort:
+        max_cort *= -1
+
+    punto_xc = np.where(y == max_cort)
+    punto_x = x[punto_xc[0]][0]
+    integral_list = riemann_sum(dis, y)
+
+    if np.sum(mat_m[1]) != 0:
+        integral_list = add_pure_moments(mat_m, integral_list, bar_l, dis)
+
+    # Encontrar coordenadas x y del flexionante máximo
+    max_refc = np.max(integral_list)
+    abs_flex = np.absolute(integral_list)
+    max_flex = np.max(abs_flex)
+
+    if max_refc < max_flex:
+        max_flex *= -1
+
+    punto_xf = np.where(integral_list == max_flex)
+    punto_xflex = x[punto_xf[0]][0]
+
+
+    with plt.style.context('ggplot'):
+        # se crea la ventana de subplots
+        fig, axs = plt.subplots(2)
+        fig.suptitle('Gráficas de análisis de viga', fontsize=12, fontweight='bold', color="mediumslateblue")
+
+        # grafica cortantes
+        func = axs[0].plot(np.concatenate([[0], x]), np.concatenate([[0], y]), color="red", label="función cortante")
+        axs[0].set_xlabel('Puntos de la viga (m)')
+        axs[0].set_ylabel('Cortantes (N)')
+        axs[0].grid(which='major', linestyle='-', linewidth='1.2', color='white')
+        axs[0].set_title("Gráfica de fuerzas cortantes", fontsize=9, fontweight='bold', color="darkslategrey")
+        axs[0].minorticks_on()
+        axs[0].tick_params(which='major',  # Options for both major and minor ticks
+                           left='on',  # turn off left ticks
+                           bottom='off')  # turn off bottom ticks
+        # Dibujar punto máximo
+        maxi = round(max_cort, 1)
+        axs[0].annotate((punto_x, round(max_cort, 2)), xy=(punto_x, max_cort), xytext=(punto_x, round(max_cort, 2)))
+        axs[0].plot(punto_x, max_cort, marker="D", color="green", label=f'Cortante máximo\n{maxi}')
+        axs[0].fill_between(x, 0, y, color="red", alpha=0.2)  # colorear entre función y eje x
+        axs[0].legend(func, [punto_x, max_cort])
+        axs[0].legend(fancybox=True, loc='center left', shadow=True, bbox_to_anchor=((1, 0.5)))
+
+        # grafica flexionantes
+        axs[1].plot(x, integral_list, color="navy", label="función flex.")
+        axs[1].set_xlabel('Puntos de la viga (m)')
+        axs[1].set_ylabel('Flexionantes (N)')
+        axs[1].grid(which='major', linestyle='-', linewidth='1.2', color='white')
+        axs[1].set_title("Gráfica de fuerzas flexionantes", fontsize=9, fontweight='bold', color="darkslategrey")
+        axs[1].minorticks_on()
+        axs[1].tick_params(which='major',  # Options for both major and minor ticks
+                           left='on',  # turn off left ticks
+                           bottom='off')  # turn off bottom ticks
+
+        axs[1].fill_between(x, 0, integral_list, color="blue", alpha=0.2)
+
+        # punto max flexionante
+        maxi_f = round(max_flex, 1)
+        axs[1].annotate((punto_xflex, round(max_flex, 2)), xy=(punto_xflex, max_flex),
+                        xytext=(punto_xflex, round(max_flex, 2)))
+        axs[1].plot(punto_xflex, max_flex, marker="D", color="salmon", label=f'flex. máximo\n{maxi_f}')
+        axs[1].legend(func, [punto_xflex, max_flex])
+        axs[1].legend(fancybox=True, loc='center left', shadow=True, bbox_to_anchor=((1, 0.5)))
+
+        plt.subplots_adjust(left=0.13,
+                            bottom=0.15,
+                            right=0.7,
+                            top=0.87,
+                            wspace=0.675,
+                            hspace=0.695)
+
+        plt.show(block=False)
+        plt.pause(9900)
