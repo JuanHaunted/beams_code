@@ -1,5 +1,5 @@
 from operator import mod
-from math import cos, sin
+from math import *
 from tkinter import X
 import numpy as np
 import pandas as pd
@@ -34,7 +34,7 @@ def get_idx(xi, diff):
 def gen_beam_mat(b_len, x_diff):
     int_len = b_len/x_diff
     f = lambda x: x*x_diff
-    row_diff = np.arange(0 ,int_len + 1, 1)
+    row_diff = np.linspace(0 ,int_len + 1, int(int_len + 1))
     row_diff = f(row_diff)
     empty_row = np.zeros(len(row_diff))
     return np.stack([row_diff, empty_row])
@@ -191,7 +191,6 @@ def process_forces(bar_len, diff_x):
 
     return f_mat, inf_punt, inf_dist
 
-
 def calc_sheer_forces(mat, bar_len, diff):
     sheer_mat = gen_beam_mat(bar_len, diff)
     acum_integral = 0
@@ -212,7 +211,10 @@ def riemann_sum(diff_x, y_images):
     return integral
 
 def add_pure_moments(moment_mat, bending_mat, b_len, x_diff):
-    row_diff = np.arange(0 ,b_len + x_diff, x_diff)
+    int_len = b_len/x_diff
+    f = lambda x: x*x_diff
+    row_diff = np.linspace(0 ,int_len + 1, int(int_len + 1))
+    row_diff = f(row_diff)
     bending_mat = np.stack([row_diff, bending_mat])
     sum = 0
     for i in range(len(bending_mat[0])):
@@ -276,7 +278,6 @@ def aditional_info():
                 my_Q = (my_t*(my_h**2))/8
     return np.array([my_S, my_Q, my_I, my_t, my_r, decision, decision2]) 
 
-
 def max_sigma(moments, section):
     moment = np.zeros(2)
     moment[0] = abs(max(moments))
@@ -284,7 +285,6 @@ def max_sigma(moments, section):
     max_moment = max(moment)
     sigma_max = (max_moment)/(section)
     return sigma_max
-    
 
 def max_tao(sheers, Q, I, t, type, r):
     sheer = np.zeros(2)
