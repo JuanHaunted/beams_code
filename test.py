@@ -71,5 +71,9 @@ def shift_mat_mod(mat, s_value):
 
 mat = gen_beam_mat_stable(b, dis)
 
-print(len(mat[0]))
-print(mat)
+f = lambda x: 1/x
+prove = np.array([0, 3, 1, 0, 3, 4, 0])
+ev_prove = f(prove)
+print(np.isinf(ev_prove[3]))
+prove = remove_discon(ev_prove)
+print(ev_prove)
