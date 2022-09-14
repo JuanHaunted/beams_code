@@ -65,6 +65,7 @@ def shift_mat(mat, s_value):
     return shifted_mat
 
 #Hace sumatoria de momentos para encontrar una de las reacciones en los soportes
+#La matriz que utiliza tiene la fila 1 shifteada con el centro en el primer soporte
 def moment_sum(mat, react_indx, mat_pure_moments = np.zeros(0)): #Editar para que funcione con empotradas
     #Rf = (sumatoria(momentos)+sumatoria(momentos_puros))/dist_rf
     dist_rf = mat[0, react_indx]
@@ -78,7 +79,7 @@ def moment_sum(mat, react_indx, mat_pure_moments = np.zeros(0)): #Editar para qu
 
     #Previene que el resultado sea indefinido
     if dist_rf == 0:
-        return m_sum + pm_sum
+        return m_sum + pm_sum #Reacción angular
     else:
         return (m_sum + pm_sum)/dist_rf
 
@@ -288,7 +289,7 @@ def add_pure_moments(moment_mat, bending_mat, b_len, x_diff):
     #Por eso se debe sumar sum a todos los elementos de la matriz
     sum = 0
     for i in range(len(bending_mat[0])):
-        sum -= moment_mat[1, i]
+        sum += moment_mat[1, i] * (-1)
         bending_mat[1, i] += sum
     return bending_mat[1]
 
