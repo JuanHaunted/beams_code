@@ -17,13 +17,15 @@ def aprox_diff(num, diff_x):
         return n_diff * diff_x
 
 #Convierte un string en una función anónima y le agrega una multiplicación por el diferencial 
+#Escribir las funciones con np.func
+#Convertimos la función de Newtons/metro a Newtons/cm (=> Factor de conversión 0.01)
 def str_to_function(math_expr):
     if "x" in math_expr:
         return lambda x: 0.01 * (eval(math_expr))
     else:
         return lambda x: (x*0) + (eval(math_expr) * 0.01)
 
-#Convierte un string en función anónima
+#Convierte un string en función anónima conservando Newtons/metro
 def str_to_function_wo_dis(math_expr):
     if "x" in math_expr:
         return lambda x:  (eval(math_expr))
@@ -122,8 +124,8 @@ def calc_reactions_sup(beam_mat, sup_i, sup_f, pure_moments, diff):
 
 #Recibe los inputs inciales del usuario => Tipo de barra, longitud de la barra y posición de los soportes
 def initial_values():
-    bar_len = float(input("Ingrese la longitud de la viga: "))
-    diff = bar_len/(bar_len*10)
+    bar_len = float(input("Ingrese la longitud de la viga en metros: "))
+    diff = bar_len/(bar_len*100)
     bar_type = int(input("Ingrese el tipo de viga \n-0 => Con dos soportes \n-1 => Empotrada \nSu selección: "))
     if bar_type == 0:
         #Nota: Las posiciones se aproximan utilizando aprox diff en caso de que no existan actualmente en la discretización
@@ -169,7 +171,7 @@ def pure_moments(bar_len, diff_x):
         moment_idx = get_idx(loc, diff_x)
         value = float(input(f"Ingrese la magnitud del momento {c} (N.m): "))
         moment_mat[1, moment_idx] += value
-        c =+ 1
+        c += 1
 
     return moment_mat
 
@@ -213,11 +215,11 @@ def process_forces(bar_len, diff_x):
         begin_fun = aprox_diff(float(input(f"Ingrese la posicion inicial de la carga distribuida {k}: ")), diff_x)
         end_fun = aprox_diff(float(input(f"Ingrese la posición final de la carga distribuida {k}: ")), diff_x)
         dom_f = aprox_diff(float(input(f"Ingrese el valor inicial del dominio de la función {k}: ")), diff_x)
-        dist_diff = end_fun - begin_fun
+        dist_diff = end_fun - begin_fun #Distancia del principio de la función
         #int_len = bar_len/diff_x
-        int_dom = dom_f/diff_x
-        int_dist = dist_diff/diff_x
-        f = lambda x: x*diff_x
+        int_dom = dom_f/diff_x #Dominio en enteros
+        int_dist = dist_diff/diff_x #Distancia en enteros
+        f = lambda x: x*diff_x #Función para devolver el diferencial
 
         #Creamos un arange con todos los puntos del dominio donde se quiera evaluar decuerdo a nuestra discretización 
         row_diff = np.arange(int_dom, int_dom + int_dist + 1, 1)
@@ -232,6 +234,12 @@ def process_forces(bar_len, diff_x):
 
         ini_idx = get_idx(begin_fun, diff_x)
 
+        #Añadimos los resultados de la función evaluada en la discretización (Esto implica tomar cada punto evaluado como una carga puntual)
+        j=0
+        for i in range(ini_idx, ini_idx+ len(y_images)):
+            f_mat[1, i] += y_images[j]
+            j+=1
+
         #Guardamos la información relevante en la matriz de información para graficar
         inf_dist[0].append(math_expr_wo_dis)
         inf_dist[1].append(begin_fun)
@@ -240,16 +248,11 @@ def process_forces(bar_len, diff_x):
         inf_dist[4].append(math_expr_str)
         k += 1
 
-        #Añadimos los resultados de la función evaluada en la discretización (Esto implica tomar cada punto evaluado como una carga puntual)
-        j=0
-        for i in range(ini_idx, len(y_images)+ini_idx):
-            f_mat[1, i] += y_images[j]
-            j+=1
-
     #Retornamos la matriz de fuerzas y las matrices de información
     return f_mat, inf_punt, inf_dist
 
 #Calcula las fuerzas cortantes una vez todas las fuerzas están interpretadas como puntuales
+#Mat es la matriz de fuerzas con reacciones
 def calc_sheer_forces(mat, bar_len, diff):
     sheer_mat = gen_beam_mat(bar_len, diff)
     #No se multiplica el diferencial al integral puesto que ya está procesado en str_to_function y process_forces
@@ -289,6 +292,7 @@ def add_pure_moments(moment_mat, bending_mat, b_len, x_diff):
         bending_mat[1, i] += sum
     return bending_mat[1]
 
+#Recibe información adicional de la viga para realizar análisis de esfuerzos
 def aditional_info():
     decision = input("Desea considerar el perfil de la viga? \n -y => Si \n -n => No \n Su selección: ")
 
@@ -323,7 +327,9 @@ def aditional_info():
                 my_Q = 1
                 my_t = 1
                 my_r = float(input("Ingrese el radio del círculo: "))
+                #Para una sección transversal de un semicirculo se calcula el momento de inercia para el mismo, estandarizado por el libro.
                 my_I = ((1/8)*pi)*(my_r**4)
+                #De manera analoga, se saca el módulo de sección para esta gemetría que está estandarizado debido al momento de inercia y el radio.
                 my_S = my_I/my_r
         elif decision2 == "r":
             decision3 = input("El perfil a considerar será de tipo rectangular \n ¿Quiere calcular usted mismo las especificaciones de la viga? \n -y => Si \n -n => No \n Su selección:")
@@ -339,20 +345,26 @@ def aditional_info():
                 print("Revise el anexo tipo PDF llamado especificaciones \n Siendo t el espesor de la viga y h su altura, ingrese según la tabla. ")
                 my_t = float(input("Ingrese el espesor de la viga (t): "))
                 my_h = float(input("Ingrese la altura de la viga (h): "))
+                #El momento de inercia es calculado según el espesor y la altura de la sección transversal
                 my_I = ((my_t)*(my_h**3))/12
+                #De manera analoga, se calcula el módulo de sección para esta gemetría que está estandarizado debido al momento de inercia y la altura.
                 my_S = my_I/(my_h/2)
                 my_r = 0
+                #Se calcula el primer momento de área para la sección transversal escogida.
                 my_Q = (my_t*(my_h**2))/8
     return np.array([my_S, my_Q, my_I, my_t, my_r, decision, decision2]) 
 
+#Calcula el esfuerzo debido a flexión máximo
 def max_sigma(moments, section):
     moment = np.zeros(2)
     moment[0] = abs(max(moments))
     moment[1] = abs(min(moments))
     max_moment = max(moment)
+    #Teniendo el módulo de sección hallado en la función anterior y el momento máximo, se calcula el esfuerzo debido a flexión máximo y se representa e punto en la barra.
     sigma_max = (max_moment)/(section)
     return sigma_max
-    
+
+#Calcula el esfuerzo cortante máximo
 def max_tao(sheers, Q, I, t, type, r):
     sheer = np.zeros(2)
     sheer[0] = abs(max(sheers))
@@ -360,9 +372,11 @@ def max_tao(sheers, Q, I, t, type, r):
     max_sheer = max(sheer)
     tao_max = 0
     if type == "r" or "w":
+        #El tao maximo se calcula gracias al cortante maximo, el primer momento de área de la sección transversal, su momento de inercia y el espesor de la viga.
         tao_max = (max_sheer*Q)/(I*t)
     elif type == "c":
-        tao_max = (4*max_sheer)/(pi*(r**2))
+        #Para una sección circular, se calcula según su área y el cortante máximo.
+        tao_max = (4*max_sheer)/(3*(pi*(r**2)))
     return tao_max
 
 # Función para hallar los puntos inferiores de los soportes, para graficar
@@ -370,7 +384,6 @@ def find_point(z):
     bajo_der = [z[0] + 1, z[1] - 3]
     bajo_iz = [z[0] - 1, z[1] - 3]
     return bajo_der, bajo_iz
-
 
 # Función para la gráfica ilustrativa de fuerzas en una viga
 def gen_graph(bar_l, bar_type, x_sup, der_sup, iz_sup, x2_sup, der_sup2, iz_sup2, forc_m, distrib, moments,
@@ -424,8 +437,8 @@ def gen_graph(bar_l, bar_type, x_sup, der_sup, iz_sup, x2_sup, der_sup2, iz_sup2
         # Variables momento
         mom = moments[0]
         values_m_mat = moments[1]
-        value = np.nonzero(values_m_mat)
-        value_m = value[0]
+        value = np.nonzero(values_m_mat)  #tupla
+        value_m = value[0] #tiene lista de posiciones
 
         #Se extrae el valor de posición del momento, de la fila de magnitudes de momentos
         values = []
@@ -446,7 +459,7 @@ def gen_graph(bar_l, bar_type, x_sup, der_sup, iz_sup, x2_sup, der_sup2, iz_sup2
             col = (np.random.random(), np.random.random(), np.random.random())  # genera colores random
 
             # dibuja una flecha con coordenadas iniciales a finales
-            puntual = plt.arrow(loc_f[i], 5, 0, -3.5, zorder=2, color=col, width=0.3, label=f"{value_f[i]} N")
+            plt.arrow(loc_f[i], 5, 0, -3.5, zorder=2, color=col, width=0.3, label=f"{value_f[i]} N")
 
         # Dibujar distribuidas, como funciones
         for c in range(0, len(distrib[0])):
@@ -455,7 +468,7 @@ def gen_graph(bar_l, bar_type, x_sup, der_sup, iz_sup, x2_sup, der_sup2, iz_sup2
             begin = begin_f[c]
             end = end_f[c]
             dom = domain[c]
-            shift = begin - dom #El cambio en el eje x para estar acorde al dominio e inicio de función
+            shift = begin - dom #dISTANCIA DEL DOM AL BEGIN FUN
             dif_f = end - begin
 
             xpts = np.linspace(dom, dom + dif_f, 50)
@@ -476,7 +489,16 @@ def gen_graph(bar_l, bar_type, x_sup, der_sup, iz_sup, x2_sup, der_sup2, iz_sup2
             plt.gca().add_patch(mom_n)
 
         # Se añade un marcador para indicar la deflexión máxima de la barra
-        plt.plot(5, -1.5, marker="X", color="firebrick", zorder=3, markersize=11, label=f'Deflexión máxima')
+
+        if bar_type == 0:
+
+            plt.plot(-100, -100, marker="2", color="firebrick", zorder=0, markersize=11, label=f'Reac. sup 1:\n{round(rea_1,2)} N',alpha=1)
+            plt.plot(-100, -100, marker="2", color="blue", zorder=0, markersize=11, label=f'Reac. sup 2:\n{round(rea_2,2)} N', alpha=1)
+
+        else:
+            plt.plot(-100, -100, marker="2", color="firebrick", zorder=0, markersize=11, label=f'Reac. en y:\n{round(rea_1,2)} N',alpha=1)
+            plt.plot(-100, -100, marker="2", color="blue", zorder=0, markersize=11, label=f'Reac. ang:\n{round(rea_2,2)} Nm', alpha=1)
+
 
         plt.legend(fancybox=True, loc='upper right', shadow=True)
         plt.subplots_adjust(left=0.135,
@@ -542,7 +564,7 @@ def cool_graphs(mat, mat_m, dis, bar_l, sigma, tao):
         # Dibujar punto máximo
         maxi = round(max_cort, 1)
         axs[0].annotate((round(punto_x, 2), round(max_cort, 2)), xy=(punto_x, max_cort), xytext=(round(punto_x, 2), round(max_cort, 2)))
-        axs[0].plot(punto_x, max_cort, marker="D", color="green", label=f'Cortante máximo\n{maxi}')
+        axs[0].plot(punto_x, max_cort, marker="D", color="green", label=f'Cortante máximo\n{maxi}\nTao máx.\n{tao}')
         axs[0].fill_between(x, 0, y, color="red", alpha=0.2)  # colorear entre función y eje x
         axs[0].legend(func, [punto_x, max_cort])
         axs[0].legend(fancybox=True, loc='center left', shadow=True, bbox_to_anchor=((1,0.5)))
@@ -564,7 +586,7 @@ def cool_graphs(mat, mat_m, dis, bar_l, sigma, tao):
         maxi_f = round(max_flex, 1)
         axs[1].annotate(( round(punto_xflex, 2), round(max_flex, 2)), xy=(punto_xflex, max_flex),
                         xytext=(round(punto_xflex, 2), round(max_flex, 2)))
-        axs[1].plot(punto_xflex, max_flex, marker="D", color="salmon", label=f'flex. máximo\n{maxi_f}')
+        axs[1].plot(punto_xflex, max_flex, marker="D", color="salmon", label=f'flex. máximo\n{maxi_f}\nSigma máx.\n{sigma}')
         axs[1].legend(func, [punto_xflex, max_flex])
         axs[1].legend(fancybox=True, loc='center left', shadow=True, bbox_to_anchor=((1, 0.5)))
 

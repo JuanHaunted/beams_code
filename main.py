@@ -1,9 +1,8 @@
 #Importamos las librerías pertinentes
-import matplotlib.pyplot as plt
 import numpy as np
 from functions import *
 
-#Tomamos los valroes iniciales y los guardamos según el tipo de barra
+#Tomamos los valores iniciales y los guardamos según el tipo de barra
 init_values = initial_values()
 if init_values[-1] == 0:
     bar = init_values[2]
@@ -12,7 +11,7 @@ if init_values[-1] == 0:
 else:
     bar = init_values[1]
     si_loc = init_values[0]
-    sf_loc = -1
+    sf_loc = -1 #Codificarle a las funciones que la barra está empotrada
 
 #Le preguntamos al usuario si desea considerar el perfil de la barra e ingresa los datos adicionales requeridos (Para calcular TaoMax y Sigma Max)
 aditional_values = aditional_info()
@@ -44,7 +43,7 @@ moments = calc_data[1]
 #Calculamos las cortanes
 sheer_forces = calc_sheer_forces(force_with_reactions, bar, discret)
 
-#Integramos para obtener las flexionantes
+#Integramos para obtener las flexionantes y hallamos esfuerzos máximos en la viga
 integral_list = riemann_sum(discret, sheer_forces[1,:])
 if np.sum(moments[1]) != 0:
     integral_list = add_pure_moments(moments, integral_list, bar, discret)
