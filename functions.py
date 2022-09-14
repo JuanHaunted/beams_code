@@ -533,6 +533,9 @@ def cool_graphs(mat, mat_m, dis, bar_l, sigma, tao):
     punto_x = x[punto_xc[0]][0]
     integral_list = riemann_sum(dis, y)
 
+    if np.sum(mat_m[1]) != 0:
+        integral_list = add_pure_moments(mat_m, integral_list, bar_l, dis)
+
     # Encontrar coordenadas x y del flexionante máximo
     max_refc = np.max(integral_list)
     abs_flex = np.absolute(integral_list)
@@ -544,8 +547,6 @@ def cool_graphs(mat, mat_m, dis, bar_l, sigma, tao):
     punto_xf = np.where(integral_list == max_flex)
     punto_xflex = x[punto_xf[0]][0]
 
-    if np.sum(mat_m[1]) != 0:
-        integral_list = add_pure_moments(mat_m, integral_list, bar_l, dis)
 
     with plt.style.context('ggplot'):
         # se crea la ventana de subplots
